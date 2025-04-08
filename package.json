@@ -1,0 +1,36 @@
+{
+    "name": "viewer-agent",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dist": "electron-builder"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "axios": "^1.8.4",
+        "chokidar": "^4.0.3",
+        "cors": "^2.8.5",
+        "express": "^5.1.0",
+        "multer": "^1.4.5-lts.2"
+    },
+    "devDependencies": {
+        "electron": "^35.1.2",
+        "electron-builder": "^26.0.12"
+    },
+    "build": {
+        "appId": "com.example.agent",
+        "productName": "Viewer_Agent",
+        "win": {
+            "target": "portable",
+            "icon": "doc.ico"
+        },
+        "mac": {
+            "target": "dmg",
+            "icon": "doc.icns"
+        }
+    }
+}
