@@ -58,7 +58,6 @@ function startAgentServer() {
         }
 
         console.log("📂 파일 열기 시작:", filePath);
-        // 파일 저장 감지 + 일정 시간 후 락 해제
         watchFileSave(filePath, fileId, userEmail);
     }
 

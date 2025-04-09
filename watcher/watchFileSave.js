@@ -2,7 +2,6 @@ const chokidar = require("chokidar");
 const axios = require("axios");
 const fs = require("fs");
 const FormData = require("form-data");
-const AUTO_UNLOCK_TIMEOUT = 2 * 60 * 1000;
 
 function watchFileSave(filePath, fileId, userEmail) {
     const watcher = chokidar.watch(filePath, {
@@ -11,7 +10,6 @@ function watchFileSave(filePath, fileId, userEmail) {
         interval: 1000,
     });
     let lastModified = Date.now();
-    let lockReleased = false;
     watcher.on("change", async () => {
         lastModified = Date.now();
 
