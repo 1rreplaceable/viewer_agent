@@ -32,23 +32,6 @@ function watchFileSave(filePath, fileId, userEmail) {
             console.error("❌ 저장 전송 실패:", err.message);
         }
     });
-    const interval = setInterval(async () => {
-        const now = Date.now();
-        const elapsed = now - lastModified;
-
-        if (!lockReleased && elapsed > AUTO_UNLOCK_TIMEOUT) {
-            try {
-                await axios.put(`https://share-docs-api.neulgo.com/api/v1/files/${fileId}/lock?value=false`);
-                console.log(`🔓 ${AUTO_UNLOCK_TIMEOUT / 1000}초 이상 저장 없음 → 락 해제 완료`);
-
-                lockReleased = true;
-                watcher.close();
-                clearInterval(interval);
-            } catch (err) {
-                console.error("❌ 락 해제 실패:", err.message);
-            }
-        }
-    }, 5000);
 }
 
 module.exports = { watchFileSave };

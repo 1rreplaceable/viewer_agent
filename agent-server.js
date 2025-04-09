@@ -24,8 +24,8 @@ function startAgentServer() {
     // 🔽 파일 다운로드 함수
     async function downloadAndSaveFile(fileUrl) {
         const fileName = path.basename(fileUrl);
-        const destPath = path.join(uploadDir, fileName);
-
+        const uniqueName = `${Date.now()}-${fileName}`;
+        const destPath = path.join(uploadDir, uniqueName);
         const writer = fs.createWriteStream(destPath);
         const response = await axios({ method: "GET", url: fileUrl, responseType: "stream" });
         response.data.pipe(writer);
@@ -45,23 +45,19 @@ function startAgentServer() {
     // 📂 파일 열기 + 저장 감지 시작
     async function openFileWithWatcher(filePath, fileId, userEmail) {
         const platform = process.platform;
-        let command, args;
-
         if (platform === "win32") {
-            command = "start";
-            args = [filePath];
+            const command = `start "" "${filePath}"`;
+            spawn(command, {
+                shell: true,
+                windowsHide: true,
+            });
         } else if (platform === "darwin") {
-            command = "open";
-            args = [filePath];
+            spawn("open", [filePath]);
         } else {
-            command = "xdg-open";
-            args = [filePath];
+            spawn("xdg-open", [filePath]);
         }
 
-        spawn(command, args, { shell: true });
         console.log("📂 파일 열기 시작:", filePath);
-        await axios.put(`https://share-docs-api.neulgo.com/api/v1/files/${fileId}/lock?value=true`);
-        console.log("🔒 파일 열기 → 락 설정 완료");
         // 파일 저장 감지 + 일정 시간 후 락 해제
         watchFileSave(filePath, fileId, userEmail);
     }
@@ -76,7 +72,10 @@ function startAgentServer() {
         }
 
         try {
-            const filePath = await downloadAndSaveFile(file.s3Url);
+            const url = file.fileHistoryList.length < 1 ? file.s3Url : file.fileHistoryList[0].s3Url;
+            const filePath = await downloadAndSaveFile(url);
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             await openFileWithWatcher(filePath, file.id, user.email);
             res.json({ status: "success", message: "파일 열기 완료", path: filePath });
         } catch (err) {
