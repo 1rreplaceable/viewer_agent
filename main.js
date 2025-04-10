@@ -1,6 +1,7 @@
-const { app, Tray, Menu, nativeImage, Notification } = require("electron");
+const { app, Tray, Menu, nativeImage, Notification, dialog } = require("electron");
 const path = require("path");
 const { startAgentServer } = require("./agent-server");
+const { autoUpdater } = require("electron-updater");
 
 let tray = null;
 
@@ -8,10 +9,45 @@ let tray = null;
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-    console.log("⚠️ 이미 실행 중인 에이전트가 있습니다. 종료합니다.");
     app.quit();
 } else {
     app.whenReady().then(() => {
+        autoUpdater.autoDownload = false;
+
+        // ✨ 업데이트 확인
+        autoUpdater.checkForUpdates();
+
+        // 📦 업데이트 가능한 경우 → 사용자에게 다운로드할지 물어봄
+        autoUpdater.on("update-available", () => {
+            dialog
+                .showMessageBox({
+                    type: "info",
+                    title: "업데이트 확인",
+                    message: "새로운 버전이 있습니다. 지금 다운로드 하시겠습니까?",
+                    buttons: ["예", "아니오"],
+                    defaultId: 0,
+                    cancelId: 1,
+                })
+                .then(result => {
+                    if (result.response === 0) {
+                        autoUpdater.downloadUpdate();
+                    }
+                });
+        });
+
+        // ✅ 다운로드 완료 → 재시작 안내
+        autoUpdater.on("update-downloaded", () => {
+            dialog
+                .showMessageBox({
+                    type: "info",
+                    title: "업데이트 완료",
+                    message: "새로운 버전이 다운로드되었습니다.\n확인을 누르면 앱이 재시작됩니다.",
+                    buttons: ["확인"],
+                })
+                .then(() => {
+                    autoUpdater.quitAndInstall();
+                });
+        });
         if (process.platform === "darwin") {
             const dockIconPath = path.join(__dirname, "doc.png"); // 원하는 이미지 경로
             const dockIcon = nativeImage.createFromPath(dockIconPath);
@@ -45,7 +81,7 @@ if (!gotTheLock) {
             { label: "종료", click: () => app.quit() },
         ]);
 
-        tray.setToolTip("Viewer Agent 실행 중");
+        tray.setToolTip("Viewer Agent 실행 중 1.0.1");
         tray.setContextMenu(contextMenu);
     });
 

@@ -1,6 +1,6 @@
 {
     "name": "viewer-agent",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "main.js",
     "scripts": {
         "start": "electron .",
@@ -15,6 +15,7 @@
         "axios": "^1.8.4",
         "chokidar": "^4.0.3",
         "cors": "^2.8.5",
+        "electron-updater": "^6.6.2",
         "express": "^5.1.0",
         "multer": "^1.4.5-lts.2"
     },
@@ -25,8 +26,14 @@
     "build": {
         "appId": "com.example.agent",
         "productName": "Viewer_Agent",
+        "publish": [
+            {
+                "provider": "generic",
+                "url": "https://kr.object.ncloudstorage.com/share-docs/agents/"
+            }
+        ],
         "win": {
-            "target": "portable",
+            "target": "nsis",
             "icon": "doc.ico"
         },
         "mac": {
