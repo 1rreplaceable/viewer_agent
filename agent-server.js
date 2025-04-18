@@ -15,17 +15,29 @@ function startAgentServer() {
     appServer.use(express.json());
     appServer.use(cors());
 
-    // 임시 저장 경로
-    const uploadDir = path.join(os.tmpdir(), "viewer-agent-files");
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+    // 사용자 문서 폴더 경로 설정
+    function getUserDocumentsPath() {
+        const platform = process.platform;
+        if (platform === "win32") {
+            return path.join(os.homedir(), "Documents", "Viewer-Agent");
+        } else if (platform === "darwin") {
+            return path.join(os.homedir(), "Documents", "Viewer-Agent");
+        } else {
+            return path.join(os.homedir(), "Documents", "Viewer-Agent");
+        }
+    }
+
+    // 문서 폴더 생성
+    const documentsDir = getUserDocumentsPath();
+    if (!fs.existsSync(documentsDir)) {
+        fs.mkdirSync(documentsDir, { recursive: true });
     }
 
     // 🔽 파일 다운로드 함수
     async function downloadAndSaveFile(fileUrl) {
         const fileName = path.basename(fileUrl);
         const uniqueName = `${Date.now()}-${fileName}`;
-        const destPath = path.join(uploadDir, uniqueName);
+        const destPath = path.join(documentsDir, uniqueName);
         const writer = fs.createWriteStream(destPath);
         const response = await axios({ method: "GET", url: fileUrl, responseType: "stream" });
         response.data.pipe(writer);
